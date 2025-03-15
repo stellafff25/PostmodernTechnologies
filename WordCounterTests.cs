@@ -1,4 +1,7 @@
-﻿using Xunit;
+﻿using System.Diagnostics;
+using Xunit;
+using System.IO;
+using System;
 
 namespace WordCounter.Tests
 {
@@ -30,6 +33,112 @@ namespace WordCounter.Tests
         {
             int result = WordCounter.CountWordOccurrences("Hello world hello", "hello");
             Assert.Equal(2, result);
+        }
+
+        [Fact]
+        public void Main_SuccessfulExecution_ReturnsExitCodeZero()
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = "run",
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            process.StandardInput.WriteLine("hello world");
+            process.StandardInput.WriteLine("hello");
+            process.StandardInput.Close();
+            process.WaitForExit();
+
+            Assert.Equal(0, process.ExitCode);
+        }
+
+        [Fact]
+        public void Main_EmptyInput_ReturnsExitCodeOne()
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = "run",
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            process.StandardInput.WriteLine("");
+            process.StandardInput.WriteLine("");
+            process.StandardInput.Close();
+            process.WaitForExit();
+
+            Assert.Equal(1, process.ExitCode);
+        }
+
+        [Fact]
+        public void Main_ErrorMessage_GoesToStderr()
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = "run",
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            process.StandardInput.WriteLine("");
+            process.StandardInput.WriteLine("");
+            process.StandardInput.Close();
+            string errorOutput = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+
+            Assert.Contains("Error:", errorOutput);
+        }
+
+        [Fact]
+        public void Main_ValidInput_GoesToStdout()
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = "run",
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            process.StandardInput.WriteLine("hello world hello");
+            process.StandardInput.WriteLine("hello");
+            process.StandardInput.Close();
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+
+            Assert.Contains("Number of occurrences: 2", output);
         }
     }
 }
