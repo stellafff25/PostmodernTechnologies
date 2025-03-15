@@ -115,6 +115,37 @@ namespace WordCounter.Tests
         }
 
         [Fact]
+        public void Main_ReadsInputFromStdin()
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = "run",
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+
+            using (StreamWriter writer = process.StandardInput)
+            {
+                writer.WriteLine("hello world hello");
+                writer.WriteLine("hello");
+            }
+
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            
+            Assert.Contains("Number of occurrences: 2", output);
+        }
+
+        [Fact]
         public void Main_ValidInput_GoesToStdout()
         {
             var process = new Process
