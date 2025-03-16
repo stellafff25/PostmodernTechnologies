@@ -25,5 +25,12 @@ jobs:
     - name: Build project
       run: dotnet build --no-restore --configuration Release
     
-    - name: Run tests
-      run: dotnet test --no-build --configuration Release --verbosity normal
+    - name: Run tests with report
+      run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx" --results-directory TestResults
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: TestResults/test-results.trx
