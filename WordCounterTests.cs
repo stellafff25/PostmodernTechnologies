@@ -1,7 +1,5 @@
-﻿using System.Diagnostics;
-using Xunit;
+﻿using Xunit;
 using System.IO;
-using System;
 
 namespace WordCounter.Tests
 {
@@ -38,138 +36,68 @@ namespace WordCounter.Tests
         [Fact]
         public void Main_SuccessfulExecution_ReturnsExitCodeZero()
         {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "dotnet",
-                    Arguments = "run",
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
+            var input = new StringReader("hello world\nhello\n");
+            var output = new StringWriter();
+            var errorOutput = new StringWriter();
 
-            process.Start();
-            process.StandardInput.WriteLine("hello world");
-            process.StandardInput.WriteLine("hello");
-            process.StandardInput.Close();
-            process.WaitForExit();
+            int exitCode = Program.Main(input, output, errorOutput);
 
-            Assert.Equal(0, process.ExitCode);
+            Assert.Equal(0, exitCode);
+            Assert.Contains("Number of occurrences: 1", output.ToString());
+            Assert.Empty(errorOutput.ToString());
         }
 
         [Fact]
         public void Main_EmptyInput_ReturnsExitCodeOne()
         {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "dotnet",
-                    Arguments = "run",
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
+            var input = new StringReader("\n\n");
+            var output = new StringWriter();
+            var errorOutput = new StringWriter();
 
-            process.Start();
-            process.StandardInput.WriteLine("");
-            process.StandardInput.WriteLine("");
-            process.StandardInput.Close();
-            process.WaitForExit();
+            int exitCode = Program.Main(input, output, errorOutput);
 
-            Assert.Equal(1, process.ExitCode);
-        }
-
-        [Fact]
-        public void Main_ErrorMessage_GoesToStderr()
-        {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "dotnet",
-                    Arguments = "run",
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-
-            process.Start();
-            process.StandardInput.WriteLine("");
-            process.StandardInput.WriteLine("");
-            process.StandardInput.Close();
-            string errorOutput = process.StandardError.ReadToEnd();
-            process.WaitForExit();
-
-            Assert.Contains("Error:", errorOutput);
-        }
-
-        [Fact]
-        public void Main_ReadsInputFromStdin()
-        {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "dotnet",
-                    Arguments = "run",
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-
-            process.Start();
-
-            using (StreamWriter writer = process.StandardInput)
-            {
-                writer.WriteLine("hello world hello");
-                writer.WriteLine("hello");
-            }
-
-            string output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-            
-            Assert.Contains("Number of occurrences: 2", output);
+            Assert.Equal(1, exitCode);
+            Assert.Contains("Error: Please provide both text and a word to search for.", errorOutput.ToString());
         }
 
         [Fact]
         public void Main_ValidInput_GoesToStdout()
         {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "dotnet",
-                    Arguments = "run",
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
+            var input = new StringReader("hello world hello\nhello\n");
+            var output = new StringWriter();
+            var errorOutput = new StringWriter();
 
-            process.Start();
-            process.StandardInput.WriteLine("hello world hello");
-            process.StandardInput.WriteLine("hello");
-            process.StandardInput.Close();
-            string output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
+            int exitCode = Program.Main(input, output, errorOutput);
 
-            Assert.Contains("Number of occurrences: 2", output);
+            Assert.Equal(0, exitCode);
+            Assert.Contains("Number of occurrences: 2", output.ToString());
+            Assert.Empty(errorOutput.ToString());
+        }
+
+        [Fact]
+        public void Main_ErrorMessage_GoesToStderr()
+        {
+            var input = new StringReader("\n\n");
+            var output = new StringWriter();
+            var errorOutput = new StringWriter();
+
+            int exitCode = Program.Main(input, output, errorOutput);
+
+            Assert.Equal(1, exitCode);
+            Assert.Contains("Error:", errorOutput.ToString());
+        }
+
+        [Fact]
+        public void Main_ReadsInputFromStdin()
+        {
+            var input = new StringReader("hello world hello\nhello\n");
+            var output = new StringWriter();
+            var errorOutput = new StringWriter();
+
+            int exitCode = Program.Main(input, output, errorOutput);
+
+            Assert.Equal(0, exitCode);
+            Assert.Contains("Number of occurrences: 2", output.ToString());
         }
     }
 }

@@ -2,33 +2,39 @@
 
 namespace WordCounter
 {
-    class Program
+    public class Program
     {
-        static int Main()
+        public static int Main(TextReader input, TextWriter output, TextWriter errorOutput)
         {
             try
             {
-                Console.Write("Enter text: ");
-                string text = Console.ReadLine();
+                output.Write("Enter text: ");
+                string text = input.ReadLine();
 
-                Console.Write("Enter the word to search: ");
-                string word = Console.ReadLine();
+                output.Write("Enter the word to search: ");
+                string word = input.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(word))
                 {
-                    Console.Error.WriteLine("Error: Please provide both text and a word to search for.");
+                    errorOutput.WriteLine("Error: Please provide both text and a word to search for.");
                     return 1;
                 }
 
                 int count = WordCounter.CountWordOccurrences(text, word);
-                Console.WriteLine($"Number of occurrences: {count}");
+                output.WriteLine($"Number of occurrences: {count}");
                 return 0;
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: {ex.Message}");
+                errorOutput.WriteLine($"Error: {ex.Message}");
                 return 1;
             }
+        }
+
+        public static void Main()
+        {
+            int exitCode = Main(Console.In, Console.Out, Console.Error);
+            Environment.Exit(exitCode);
         }
     }
 }
