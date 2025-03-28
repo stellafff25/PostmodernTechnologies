@@ -1,37 +1,36 @@
-name: .NET Core Build and Test
+name: .NET CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up .NET SDK
-      uses: actions/setup-dotnet@v2
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '6.0'
-
+        dotnet-version: '8.0.x'
+    
     - name: Restore dependencies
       run: dotnet restore
-
+    
     - name: Build project
-      run: dotnet build --configuration Release
-
-    - name: Run tests
-      run: dotnet test --configuration Release --no-build --verbosity normal
-
+      run: dotnet build --no-restore --configuration Release
+    
+    - name: Run tests with report
+      run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx" --results-directory TestResults
+    
     - name: Upload test results
-      uses: actions/upload-artifact@v2
+      if: always()
+      uses: actions/upload-artifact@v4
       with:
         name: test-results
-        path: $(System.DefaultWorkingDirectory)/TestResults
+        path: TestResults/test-results.trx
